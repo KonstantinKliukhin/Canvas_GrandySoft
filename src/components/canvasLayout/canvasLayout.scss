@@ -1,0 +1,15 @@
+@import '../../assets/style/variables.scss';
+
+.canvas-field {
+	padding: 50px;
+	border: 10px solid rgb(138, 51, 138);
+	&__collapse-btn {
+		margin-top: 50px;
+		height: 50px;
+		width: 200px;
+		border: $primary-border;
+		color: $primary-color;
+		background: none;
+		font-size: 2.5rem;
+	}
+}
