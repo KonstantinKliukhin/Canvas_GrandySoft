@@ -1,10 +1,8 @@
-import { IPainter } from '../common/types/painter';
+import { CanvasLineCapType, CanvasStrokeStyleType } from '../../types/canvasPainter';
+import { IPainter } from '../../types/painter';
 
 const CANVAS_PIXEL_SCALE_W = 2;
 const CANVAS_PIXEL_SCALE_H = 2;
-
-type CanvasStrokeStyleType = Pick<CanvasRenderingContext2D, 'strokeStyle'>['strokeStyle'];
-type CanvasLineCapType = Pick<CanvasRenderingContext2D, 'lineCap'>['lineCap'];
 
 class CanvasPainter implements IPainter<CanvasStrokeStyleType, CanvasLineCapType> {
   width: number;
@@ -38,7 +36,7 @@ class CanvasPainter implements IPainter<CanvasStrokeStyleType, CanvasLineCapType
     context.lineCap = lineCap;
     context.strokeStyle = strokeStyle;
     context.lineWidth = lineWidth;
-		CanvasGradient
+    CanvasGradient;
 
     this.context = context;
   }
@@ -71,17 +69,17 @@ class CanvasPainter implements IPainter<CanvasStrokeStyleType, CanvasLineCapType
     this.context.clearRect(x, y, w, h);
   }
 
-	setLineWidth(width: number) {
-		this.context.lineWidth = width;
-	}
+  setLineWidth(width: number) {
+    this.context.lineWidth = width;
+  }
 
-	setLineCap(lineCap: CanvasLineCapType) {
-		this.context.lineCap = lineCap;
-	}
+  setLineCap(lineCap: CanvasLineCapType) {
+    this.context.lineCap = lineCap;
+  }
 
-	setStrokeStyle(strokeStyle: string | CanvasGradient | CanvasPattern) {
-		this.context.strokeStyle = strokeStyle;
-	}
+  setStrokeStyle(strokeStyle: string | CanvasGradient | CanvasPattern) {
+    this.context.strokeStyle = strokeStyle;
+  }
 }
 
 export default CanvasPainter;

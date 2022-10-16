@@ -1,8 +1,12 @@
 @import '../../assets/style/variables.scss';
 
 .canvas-field {
-	padding: 50px;
+	display: flex;
+	justify-content: center;
+	padding-top: 50px;
 	border: 10px solid rgb(138, 51, 138);
+	width: calc(100vw - 2 * 10px);
+	height: calc(100vh - 2 * 10px - 50px);
 	&__collapse-btn {
 		margin-top: 50px;
 		height: 50px;

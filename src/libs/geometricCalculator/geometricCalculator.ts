@@ -1,5 +1,6 @@
 import { IDotPosition, ILinePosition } from '../../types/line';
-import { IGeometricCalculator, IStep } from '../common/types/geometricCalculator';
+import { IGeometricCalculator } from '../common/types/geometricCalculator';
+import { IStep } from './../../types/step';
 
 class GeometricCalculator implements IGeometricCalculator {
   private toFixedNumber(value: number, numbersAfterPoint: number) {
@@ -9,11 +10,11 @@ class GeometricCalculator implements IGeometricCalculator {
   calculateStepToLineCenter(line: ILinePosition, partsOfLine: number): IStep {
     const stepX = this.toFixedNumber(
       (line.secondDotPosition.x - line.firstDotPosition.x) / partsOfLine,
-      2
+      2,
     );
     const stepY = this.toFixedNumber(
       (line.secondDotPosition.y - line.firstDotPosition.y) / partsOfLine,
-      2
+      2,
     );
 
     return {
@@ -59,7 +60,7 @@ class GeometricCalculator implements IGeometricCalculator {
 
   private calculateTwoLinesIntersectionPoint(
     firstLine: ILinePosition,
-    secondLine: ILinePosition
+    secondLine: ILinePosition,
   ): IDotPosition | false {
     // According to Paul Bourke, the equation for this problem looks like this: Pa = Pb;
     // where Pa = P1 + ua ( P2 - P1 ) and Pb = P3 + ub ( P4 - P3 );
@@ -67,9 +68,9 @@ class GeometricCalculator implements IGeometricCalculator {
     // then we need to solve 2 equations: x = x1 + ua (x2 - x1) and y = y1 + ua (y2 - y1)
     // x and y are coordinates of dot intersection
 
-		// Pa and Pb are the same point of 2 lines if this lines intersects
-		// P1 and P2 are endpoints of the first line, P3 and P4 are endpoints of the second line
-		
+    // Pa and Pb are the same point of 2 lines if this lines intersects
+    // P1 and P2 are endpoints of the first line, P3 and P4 are endpoints of the second line
+
     // Check if none of the lines are of length 0
     if (
       (firstLine.firstDotPosition.x === firstLine.secondDotPosition.x &&

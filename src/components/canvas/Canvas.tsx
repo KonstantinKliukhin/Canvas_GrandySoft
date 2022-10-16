@@ -7,11 +7,12 @@ import {
   useState,
 } from 'react';
 
+import { CanvasPainter } from '../../libs';
+import { Drawer } from '../../libs';
+import { geometricCalculator } from '../../libs';
 import { IDotPosition, ILinePosition } from '../../types/line';
-import CanvasPainter from '../../utils/canvasPainter/canvasPainter';
-import Drawer from '../../utils/drawer/drawer';
-import geometricCalculator from '../../utils/geometricCalculator/geometricCalculator';
 import { IbuttonClearHandlerRef } from '../canvasLayout/CanvasLayout';
+import animateLinesCollapsing from './animateLinesCollapsing';
 import './canvas.scss';
 
 const Canvas = forwardRef<IbuttonClearHandlerRef | null>((_props, clearHandlerRef) => {
@@ -20,7 +21,7 @@ const Canvas = forwardRef<IbuttonClearHandlerRef | null>((_props, clearHandlerRe
 
   const [visibleLines, setVisibleLines] = useState<ILinePosition[]>([]);
   const [firstDotPosition, setFirstDotPosition] = useState<IDotPosition | null>(null);
-	const [intersectionDots, setIntersectionDots] = useState<IDotPosition[]>([]);
+  const [intersectionDots, setIntersectionDots] = useState<IDotPosition[]>([]);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [animationWarning, setAnimationWarning] = useState<boolean>(false);
 
@@ -30,7 +31,7 @@ const Canvas = forwardRef<IbuttonClearHandlerRef | null>((_props, clearHandlerRe
 
     const canvasPainter = new CanvasPainter(800, 600, canvas, 'round', 'black', 5);
 
-    const drawer = new Drawer(geometricCalculator, canvasPainter);
+    const drawer = new Drawer(canvasPainter);
 
     drawerRef.current = drawer;
   }, []);
@@ -48,8 +49,9 @@ const Canvas = forwardRef<IbuttonClearHandlerRef | null>((_props, clearHandlerRe
         setIsAnimating(true);
         setVisibleLines([]);
         setFirstDotPosition(null);
+        setIntersectionDots([]);
 
-        drawerRef.current.animateCollapsingLines(visibleLines, 3000);
+        animateLinesCollapsing(visibleLines, drawerRef.current);
 
         setTimeout(() => {
           setIsAnimating(false);
@@ -57,75 +59,46 @@ const Canvas = forwardRef<IbuttonClearHandlerRef | null>((_props, clearHandlerRe
         }, 3000);
       },
     }),
-    [visibleLines]
+    [visibleLines],
   );
 
-	const drawIntersectionPoints = (line: ILinePosition) => {
-		if (!drawerRef.current) return;
-		drawerRef.current.setPenColor('red');
-		drawerRef.current.setLineWidth(15);
-		drawerRef.current.drawIntersectionPoints(line, visibleLines);
-		drawerRef.current.drawDots(intersectionDots);
-		drawerRef.current.setPenColor('black');
-		drawerRef.current.setLineWidth(5);
-	}
+  const drawDots = (dots: IDotPosition[]) => {
+    if (!drawerRef.current) return;
+    drawerRef.current.setPenColor('red');
+    drawerRef.current.setLineWidth(15);
+    drawerRef.current.drawDots(dots);
+    drawerRef.current.setPenColor('black');
+    drawerRef.current.setLineWidth(5);
+  };
 
-	const drawNewIntersectionPoints = (secondDotPosition: IDotPosition) => {
-		if (!drawerRef.current || !firstDotPosition) return;
-
-		const line = {
-			firstDotPosition,
-			secondDotPosition
-		}
-
-		drawerRef.current.setPenColor('red');
-		drawerRef.current.setLineWidth(15);
-		const newIntersectionDots = drawerRef.current.drawIntersectionPoints(line, visibleLines);
-		drawerRef.current.drawDots(intersectionDots);
-
-		setIntersectionDots(dots => {
-			return [...dots, ...newIntersectionDots];
-		})
-
-		drawerRef.current.setPenColor('black');
-		drawerRef.current.setLineWidth(5);
-	}
-
-  const saveLine = (secondDotPosition: IDotPosition) => {
-    if (!firstDotPosition) return;
-
-		const newLine: ILinePosition = {
-			firstDotPosition,
-			secondDotPosition,
-		}
-
-    setVisibleLines((lines) => {
-      return [
-        ...lines,
-         newLine,
-      ];
+  const saveIntersectionDots = (newDots: IDotPosition[]) => {
+    setIntersectionDots((oldDots) => {
+      return [...oldDots, ...newDots];
     });
   };
 
-  const draw = (secondDotPosition: IDotPosition) => {
-    if (!drawerRef.current || !firstDotPosition) return;
+  const getIntersectionDots = (mainLine: ILinePosition): IDotPosition[] => {
+    return geometricCalculator.calculateLineIntersectionPoints(mainLine, visibleLines);
+  };
+
+  const saveLine = (newLine: ILinePosition) => {
+    if (!firstDotPosition) return;
+
+    setVisibleLines((lines) => {
+      return [...lines, newLine];
+    });
+  };
+
+  const drawLine = (line: ILinePosition) => {
+    if (!drawerRef.current) return;
 
     drawerRef.current.clearAll();
 
-    drawerRef.current.drawLines(visibleLines);
-
-    const newLine = {
-      firstDotPosition,
-      secondDotPosition,
-    };
-
-    drawerRef.current.drawLine(newLine);
-
-		drawIntersectionPoints(newLine);
+    drawerRef.current.drawLines([line, ...visibleLines]);
   };
 
   const moveHandler: MouseEventHandler<HTMLCanvasElement> = ({ nativeEvent }) => {
-    if (!firstDotPosition) return;
+    if (!firstDotPosition || !drawerRef.current) return;
 
     if (isAnimating) {
       setAnimationWarning(true);
@@ -139,7 +112,16 @@ const Canvas = forwardRef<IbuttonClearHandlerRef | null>((_props, clearHandlerRe
       y: offsetY,
     };
 
-    draw(secondDotPosition);
+    const currentLine: ILinePosition = {
+      firstDotPosition,
+      secondDotPosition,
+    };
+
+    drawLine(currentLine);
+
+    const currentIntersectionDots = getIntersectionDots(currentLine);
+
+    drawDots([...intersectionDots, ...currentIntersectionDots]);
   };
 
   const clickHandler: MouseEventHandler<HTMLCanvasElement> = ({ nativeEvent }) => {
@@ -150,18 +132,25 @@ const Canvas = forwardRef<IbuttonClearHandlerRef | null>((_props, clearHandlerRe
 
     const { offsetX, offsetY } = nativeEvent;
 
-    const newFirstDotPosition: IDotPosition = {
+    const newDotPosition: IDotPosition = {
       x: offsetX,
       y: offsetY,
     };
 
     if (!firstDotPosition) {
-      setFirstDotPosition(newFirstDotPosition);
-    } else {
-			drawNewIntersectionPoints(newFirstDotPosition);
-      saveLine(newFirstDotPosition);
-      setFirstDotPosition(null);
+      setFirstDotPosition(newDotPosition);
+      return;
     }
+
+    const newLine: ILinePosition = {
+      firstDotPosition: firstDotPosition,
+      secondDotPosition: newDotPosition,
+    };
+
+    const newIntersectionDots = getIntersectionDots(newLine);
+    saveIntersectionDots(newIntersectionDots);
+    saveLine(newLine);
+    setFirstDotPosition(null);
   };
 
   return (

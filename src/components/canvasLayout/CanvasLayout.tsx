@@ -17,10 +17,12 @@ export default function CanvasLayout() {
 
   return (
     <div className='canvas-field'>
-      <Canvas ref={buttonClearHandlerRef} />
-      <button onClick={buttonClearHandler} className='canvas-field__collapse-btn'>
-        collapse lines
-      </button>
+      <div className='canvas-field__canvas-container'>
+        <Canvas ref={buttonClearHandlerRef} />
+        <button onClick={buttonClearHandler} className='canvas-field__collapse-btn'>
+          collapse lines
+        </button>
+      </div>
     </div>
   );
 }

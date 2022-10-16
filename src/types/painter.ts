@@ -9,7 +9,7 @@ export interface IPainter<StrokeStyleType, LineCapType> {
   beginPath: () => void;
   closePath: () => void;
   clearRect: (x: number, y: number, w: number, h: number) => void;
-	setLineWidth: (width: number) => void;
-	setLineCap: (argument: LineCapType) => void;
-	setStrokeStyle: (argument: StrokeStyleType) => void;
+  setLineWidth: (width: number) => void;
+  setLineCap: (lineCap: LineCapType) => void;
+  setStrokeStyle: (strokeStyle: StrokeStyleType) => void;
 }
