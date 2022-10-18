@@ -1,4 +1,4 @@
-import { MouseEventHandler, useRef } from 'react';
+import { FC, MouseEventHandler, useRef } from 'react';
 
 import Canvas from './../canvas/Canvas';
 import './canvasLayout.scss';
@@ -7,7 +7,7 @@ export interface IbuttonClearHandlerRef {
   clearHandler: () => void;
 }
 
-export default function CanvasLayout() {
+const CanvasLayout: FC = () => {
   const buttonClearHandlerRef = useRef<IbuttonClearHandlerRef | null>(null);
 
   const buttonClearHandler: MouseEventHandler<HTMLButtonElement> = () => {
@@ -26,3 +26,5 @@ export default function CanvasLayout() {
     </div>
   );
 }
+
+export default CanvasLayout;
