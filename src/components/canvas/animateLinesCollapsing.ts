@@ -9,7 +9,10 @@ const NUMBER_OF_LINE_ENDS = 2;
 const ONE_SECOND = 1000;
 const ANIMATION_DURATION = 3000;
 
-const animateLinesCollapsing = (lines: ILinePosition[], drawer: IDrawer<CanvasPainterType>) => {
+const animateLinesCollapsing = (
+  lines: ILinePosition[],
+  drawer: IDrawer<CanvasPainterType>,
+): void => {
   const steps: IStep[] = [];
 
   const secondsNumber = Math.floor(ANIMATION_DURATION / ONE_SECOND);
@@ -70,10 +73,17 @@ const startLinesCollapsingAnimation = (
       newLines[i] = geometricCalculator.calculateNewLinePositionDecreasedToCeter(line, steps[i]);
     });
 
+    const newIntersectionDots = geometricCalculator.calculateLinesIntersectionDots(newLines);
+
     drawer.clearAll();
     drawer.drawLines(newLines);
-  };
 
+    drawer.drawDots(newIntersectionDots, {
+      penColor: 'red',
+      lineWidth: 15,
+      revertSettingsBack: true,
+    });
+  };
   drawNewLines();
 };
 

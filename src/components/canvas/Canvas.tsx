@@ -64,11 +64,11 @@ const Canvas = forwardRef<IbuttonClearHandlerRef | null>((_props, clearHandlerRe
 
   const drawDots = (dots: IDotPosition[]) => {
     if (!drawerRef.current) return;
-    drawerRef.current.setPenColor('red');
-    drawerRef.current.setLineWidth(15);
-    drawerRef.current.drawDots(dots);
-    drawerRef.current.setPenColor('black');
-    drawerRef.current.setLineWidth(5);
+    drawerRef.current.drawDots(dots, {
+      penColor: 'red',
+      lineWidth: 15,
+      revertSettingsBack: true,
+    });
   };
 
   const saveIntersectionDots = (newDots: IDotPosition[]) => {
@@ -78,7 +78,7 @@ const Canvas = forwardRef<IbuttonClearHandlerRef | null>((_props, clearHandlerRe
   };
 
   const getIntersectionDots = (mainLine: ILinePosition): IDotPosition[] => {
-    return geometricCalculator.calculateLineIntersectionPoints(mainLine, visibleLines);
+    return geometricCalculator.calculateLineIntersectionDots(mainLine, visibleLines);
   };
 
   const saveLine = (newLine: ILinePosition) => {

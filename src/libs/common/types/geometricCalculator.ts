@@ -4,8 +4,9 @@ import { IStep } from '../../../types/step';
 export interface IGeometricCalculator {
   calculateStepToLineCenter: (line: ILinePosition, partsOfLine: number) => IStep;
   calculateNewLinePositionDecreasedToCeter: (line: ILinePosition, step: IStep) => ILinePosition;
-  calculateLineIntersectionPoints: (
+  calculateLineIntersectionDots: (
     mainLine: ILinePosition,
     lines: ILinePosition[],
   ) => IDotPosition[];
+  calculateLinesIntersectionDots: (lines: ILinePosition[]) => IDotPosition[];
 }

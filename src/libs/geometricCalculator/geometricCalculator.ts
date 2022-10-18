@@ -3,7 +3,7 @@ import { IGeometricCalculator } from '../common/types/geometricCalculator';
 import { IStep } from './../../types/step';
 
 class GeometricCalculator implements IGeometricCalculator {
-  private toFixedNumber(value: number, numbersAfterPoint: number) {
+  private toFixedNumber(value: number, numbersAfterPoint: number): number {
     return Number(value.toFixed(numbersAfterPoint));
   }
 
@@ -44,7 +44,7 @@ class GeometricCalculator implements IGeometricCalculator {
     return newLine;
   }
 
-  calculateLineIntersectionPoints(mainLine: ILinePosition, lines: ILinePosition[]): IDotPosition[] {
+  calculateLineIntersectionDots(mainLine: ILinePosition, lines: ILinePosition[]): IDotPosition[] {
     const intersectionPoints: IDotPosition[] = [];
 
     lines.forEach((line) => {
@@ -56,6 +56,19 @@ class GeometricCalculator implements IGeometricCalculator {
     });
 
     return intersectionPoints;
+  }
+
+  calculateLinesIntersectionDots(lines: ILinePosition[]): IDotPosition[] {
+    const currentLines = [...lines];
+    const resultDots: IDotPosition[] = [];
+
+    while (currentLines.length !== 0) {
+      const mainLine = currentLines.pop()!;
+
+      resultDots.push(...geometricCalculator.calculateLineIntersectionDots(mainLine, currentLines));
+    }
+
+    return resultDots;
   }
 
   private calculateTwoLinesIntersectionPoint(

@@ -1,13 +1,15 @@
-import { CanvasLineCapType, CanvasStrokeStyleType } from '../../types/canvasPainter';
-import { IPainter } from '../../types/painter';
+import {
+  CanvasLineCapType,
+  CanvasPainterType,
+  CanvasStrokeStyleType,
+} from '../../types/canvasPainter';
 
 const CANVAS_PIXEL_SCALE_W = 2;
 const CANVAS_PIXEL_SCALE_H = 2;
 
-class CanvasPainter implements IPainter<CanvasStrokeStyleType, CanvasLineCapType> {
-  width: number;
-  height: number;
+class CanvasPainter implements CanvasPainterType {
   private context: CanvasRenderingContext2D;
+  private canvasElement: HTMLCanvasElement;
 
   constructor(
     width: number,
@@ -17,9 +19,6 @@ class CanvasPainter implements IPainter<CanvasStrokeStyleType, CanvasLineCapType
     strokeStyle: CanvasStrokeStyleType,
     lineWidth: number,
   ) {
-    this.width = width;
-    this.height = height;
-
     canvas.width = width * CANVAS_PIXEL_SCALE_W;
     canvas.height = height * CANVAS_PIXEL_SCALE_H;
 
@@ -38,47 +37,81 @@ class CanvasPainter implements IPainter<CanvasStrokeStyleType, CanvasLineCapType
     context.lineWidth = lineWidth;
     CanvasGradient;
 
+    this.canvasElement = canvas;
     this.context = context;
+    this.width = width;
+    this.height = height;
+    this.lineCap = lineCap;
+    this.strokeStyle = strokeStyle;
+    this.lineWidth = lineWidth;
   }
 
-  setScale(x: number, y: number) {
+  setScale(x: number, y: number): void {
     this.context.scale(x, y);
   }
 
-  moveTo(x: number, y: number) {
+  moveTo(x: number, y: number): void {
     this.context.moveTo(x, y);
   }
 
-  lineTo(x: number, y: number) {
+  lineTo(x: number, y: number): void {
     this.context.lineTo(x, y);
   }
 
-  stroke() {
+  stroke(): void {
     this.context.stroke();
   }
 
-  beginPath() {
+  beginPath(): void {
     this.context.beginPath();
   }
 
-  closePath() {
+  closePath(): void {
     this.context.closePath();
   }
 
-  clearRect(x: number, y: number, w: number, h: number) {
+  clearRect(x: number, y: number, w: number, h: number): void {
     this.context.clearRect(x, y, w, h);
   }
 
-  setLineWidth(width: number) {
-    this.context.lineWidth = width;
+  set width(value: number) {
+    this.canvasElement.width = value;
   }
 
-  setLineCap(lineCap: CanvasLineCapType) {
-    this.context.lineCap = lineCap;
+  get width(): number {
+    return this.canvasElement.width;
   }
 
-  setStrokeStyle(strokeStyle: string | CanvasGradient | CanvasPattern) {
-    this.context.strokeStyle = strokeStyle;
+  set height(value: number) {
+    this.canvasElement.height = value;
+  }
+
+  get height(): number {
+    return this.canvasElement.height;
+  }
+
+  set lineCap(value: CanvasLineCapType) {
+    this.context.lineCap = value;
+  }
+
+  get lineCap(): CanvasLineCapType {
+    return this.context.lineCap;
+  }
+
+  set strokeStyle(value: CanvasStrokeStyleType) {
+    this.context.strokeStyle = value;
+  }
+
+  get strokeStyle(): CanvasStrokeStyleType {
+    return this.context.strokeStyle;
+  }
+
+  set lineWidth(value: number) {
+    this.context.lineWidth = value;
+  }
+
+  get lineWidth(): number {
+    return this.context.lineWidth;
   }
 }
 
