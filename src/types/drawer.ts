@@ -1,37 +1,15 @@
-import { IDotPosition, ILinePosition } from './line';
-import { IPainter } from './painter';
+export interface IDrawer {
+  width: number;
+  height: number;
+  lineCap: string;
+  strokeStyle: string | object;
+  lineWidth: number;
 
-export interface IDrawerOptions<LineCapType, PenColorType> {
-  lineCap?: LineCapType;
-  penColor?: PenColorType;
-  lineWidth?: number;
-  revertSettingsBack?: boolean;
-}
-
-export interface IDrawer<
-  PainterType extends IPainter<PainterType['strokeStyle'], PainterType['lineCap']>,
-> {
-  drawLine: (
-    line: ILinePosition,
-    options?: IDrawerOptions<PainterType['lineCap'], PainterType['strokeStyle']>,
-  ) => void;
-  drawLines: (
-    lines: ILinePosition[],
-    options?: IDrawerOptions<PainterType['lineCap'], PainterType['strokeStyle']>,
-  ) => void;
-  clearAll: () => void;
-  drawDot: (
-    dot: IDotPosition,
-    options?: IDrawerOptions<PainterType['lineCap'], PainterType['strokeStyle']>,
-  ) => void;
-  drawDots: (
-    dots: IDotPosition[],
-    options?: IDrawerOptions<PainterType['lineCap'], PainterType['strokeStyle']>,
-  ) => void;
-  setOptions: (
-    options: Omit<
-      IDrawerOptions<PainterType['lineCap'], PainterType['strokeStyle']>,
-      'revertSettingsBack'
-    >,
-  ) => void;
+  setScale(x: number, y: number): void;
+  moveTo(x: number, y: number): void;
+  lineTo(x: number, y: number): void;
+  stroke(): void;
+  beginPath(): void;
+  closePath(): void;
+  clearRect(x: number, y: number, w: number, h: number): void;
 }

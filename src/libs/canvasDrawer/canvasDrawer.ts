@@ -1,44 +1,39 @@
-import {
-  CanvasLineCapType,
-  CanvasPainterType,
-  CanvasStrokeStyleType,
-} from '../../types/canvasPainter';
+import { CanvasLineCapType, CanvasStrokeStyleType } from '../../types/canvas';
+import { IDrawer } from '../../types/drawer';
 
 const CANVAS_PIXEL_SCALE_W = 2;
 const CANVAS_PIXEL_SCALE_H = 2;
 
-class CanvasPainter implements CanvasPainterType {
-  private context: CanvasRenderingContext2D;
-  private canvasElement: HTMLCanvasElement;
+export class CanvasDrawer implements IDrawer {
+  protected context: CanvasRenderingContext2D;
+  protected canvasElement: HTMLCanvasElement;
 
   constructor(
     width: number,
     height: number,
-    canvas: HTMLCanvasElement,
-    lineCap: CanvasLineCap,
+    lineCap: CanvasLineCapType,
     strokeStyle: CanvasStrokeStyleType,
     lineWidth: number,
+    canvasElement: HTMLCanvasElement,
   ) {
-    canvas.width = width * CANVAS_PIXEL_SCALE_W;
-    canvas.height = height * CANVAS_PIXEL_SCALE_H;
+    canvasElement.style.width = `${width}px`;
+    canvasElement.style.height = `${height}px`;
 
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-
-    const context = canvas.getContext('2d');
+    const context = canvasElement.getContext('2d');
 
     if (!context) {
       throw new Error(`incorrect context type ${typeof context}`);
     }
 
-    context.scale(CANVAS_PIXEL_SCALE_W, CANVAS_PIXEL_SCALE_H);
-    context.lineCap = lineCap;
-    context.strokeStyle = strokeStyle;
-    context.lineWidth = lineWidth;
-    CanvasGradient;
-
-    this.canvasElement = canvas;
+    this.canvasElement = canvasElement;
     this.context = context;
+
+    this.setScale(CANVAS_PIXEL_SCALE_W, CANVAS_PIXEL_SCALE_H);
+    this.width = width * CANVAS_PIXEL_SCALE_W;
+    this.height = height * CANVAS_PIXEL_SCALE_H;
+    this.lineCap = lineCap;
+    this.strokeStyle = strokeStyle;
+    this.lineWidth = lineWidth;
     this.width = width;
     this.height = height;
     this.lineCap = lineCap;
@@ -115,4 +110,4 @@ class CanvasPainter implements CanvasPainterType {
   }
 }
 
-export default CanvasPainter;
+export default CanvasDrawer;

@@ -1,30 +1,36 @@
-import { FC, MouseEventHandler, useRef } from 'react';
+import { Component, MouseEventHandler } from 'react';
 
 import Canvas from './../canvas/Canvas';
 import './canvasLayout.scss';
 
-export interface IbuttonClearHandlerRef {
+export interface ICanvasLayoutHandlers {
   clearHandler: () => void;
 }
 
-const CanvasLayout: FC = () => {
-  const buttonClearHandlerRef = useRef<IbuttonClearHandlerRef | null>(null);
+class CanvasLayout extends Component {
+  handlers: ICanvasLayoutHandlers | null = null;
 
-  const buttonClearHandler: MouseEventHandler<HTMLButtonElement> = () => {
-    if (!buttonClearHandlerRef.current) return;
-    buttonClearHandlerRef.current.clearHandler();
+  setButtonClearHandlerRef = (handler: ICanvasLayoutHandlers) => {
+    this.handlers = handler;
   };
 
-  return (
-    <div className='canvas-field'>
-      <div className='canvas-field__canvas-container'>
-        <Canvas ref={buttonClearHandlerRef} />
-        <button onClick={buttonClearHandler} className='canvas-field__collapse-btn'>
-          collapse lines
-        </button>
+  buttonClearHandler: MouseEventHandler<HTMLButtonElement> = () => {
+    if (!this.handlers) return;
+    this.handlers.clearHandler();
+  };
+
+  render() {
+    return (
+      <div className='canvas-field'>
+        <div className='canvas-field__canvas-container'>
+          <Canvas setClearHandler={this.setButtonClearHandlerRef} />
+          <button onClick={this.buttonClearHandler} className='canvas-field__collapse-btn'>
+            collapse lines
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 export default CanvasLayout;

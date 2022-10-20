@@ -1,9 +1,11 @@
-import { FC } from 'react';
+import { Component } from 'react';
 
 import CanvasLayout from '../canvasLayout/CanvasLayout';
 
-const App: FC = () => {
-  return <CanvasLayout />;
-};
+class App extends Component {
+  render() {
+    return <CanvasLayout />;
+  }
+}
 
 export default App;

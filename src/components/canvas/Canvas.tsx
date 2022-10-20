@@ -1,107 +1,128 @@
-import {
-  MouseEventHandler,
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
+import { Component, MouseEventHandler, ReactNode, createRef } from 'react';
 
-import { CanvasPainter } from '../../libs';
-import { Drawer } from '../../libs';
-import { geometricCalculator } from '../../libs';
+import { CanvasGeometricAnimationDrawer, geometricCalculator } from '../../libs';
+import { IGeometricAnimationDrawer } from '../../types/geometricAnimationDrawer';
 import { IDotPosition, ILinePosition } from '../../types/line';
-import { IbuttonClearHandlerRef } from '../canvasLayout/CanvasLayout';
-import animateLinesCollapsing from './animateLinesCollapsing';
+import { ICanvasLayoutHandlers } from '../canvasLayout/CanvasLayout';
 import './canvas.scss';
 
-const Canvas = forwardRef<IbuttonClearHandlerRef | null>((_props, clearHandlerRef) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const drawerRef = useRef<Drawer<CanvasPainter>>();
+interface ICanvasProps {
+  setClearHandler: (handlers: ICanvasLayoutHandlers) => void;
+}
 
-  const [visibleLines, setVisibleLines] = useState<ILinePosition[]>([]);
-  const [firstDotPosition, setFirstDotPosition] = useState<IDotPosition | null>(null);
-  const [intersectionDots, setIntersectionDots] = useState<IDotPosition[]>([]);
-  const [isAnimating, setIsAnimating] = useState<boolean>(false);
-  const [animationWarning, setAnimationWarning] = useState<boolean>(false);
+interface ICanvasState {
+  isAnimating: boolean;
+  visibleLines: ILinePosition[];
+  firstDotPosition: IDotPosition | null;
+  intersectionDots: IDotPosition[];
+  animationWarning: boolean;
+}
 
-  useEffect(() => {
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
+class Convas extends Component<ICanvasProps, ICanvasState> {
+  state = {
+    isAnimating: false,
+    visibleLines: [],
+    firstDotPosition: null,
+    intersectionDots: [],
+    animationWarning: false,
+  };
 
-    const canvasPainter = new CanvasPainter(800, 600, canvas, 'round', 'black', 5);
+  animationDrawer: IGeometricAnimationDrawer | null = null;
+  canvasRef = createRef<HTMLCanvasElement>();
 
-    const drawer = new Drawer(canvasPainter);
+  componentDidMount(): void {
+    this.props.setClearHandler({
+      clearHandler: this.animateLinesCollapsing,
+    });
 
-    drawerRef.current = drawer;
-  }, []);
+    if (!this.canvasRef.current) return;
+    const animationDrawer = new CanvasGeometricAnimationDrawer(
+      geometricCalculator,
+      800,
+      600,
+      'round',
+      'black',
+      5,
+      this.canvasRef.current,
+    );
+    this.animationDrawer = animationDrawer;
+  }
 
-  useImperativeHandle(
-    clearHandlerRef,
-    () => ({
-      clearHandler: () => {
-        if (!drawerRef.current) return;
-        if (isAnimating) {
-          setAnimationWarning(true);
-          return;
-        }
+  animateLinesCollapsing = () => {
+    const { visibleLines, isAnimating } = this.state;
+    if (!this.animationDrawer) return;
+    if (isAnimating) {
+      this.setState({ animationWarning: true });
+      return;
+    }
 
-        setIsAnimating(true);
-        setVisibleLines([]);
-        setFirstDotPosition(null);
-        setIntersectionDots([]);
+    this.animationDrawer.animateLinesCollapsing(visibleLines, undefined, {
+      strokeStyle: 'red',
+      lineWidth: 15,
+      revertSettingsBack: true,
+    });
 
-        animateLinesCollapsing(visibleLines, drawerRef.current);
+    this.setState({
+      isAnimating: true,
+      visibleLines: [],
+      firstDotPosition: null,
+      intersectionDots: [],
+    });
 
-        setTimeout(() => {
-          setIsAnimating(false);
-          setAnimationWarning(false);
-        }, 3000);
-      },
-    }),
-    [visibleLines],
-  );
+    setTimeout(() => {
+      this.setState({
+        isAnimating: false,
+        animationWarning: false,
+      });
+    }, 3000);
+  };
 
-  const drawDots = (dots: IDotPosition[]) => {
-    if (!drawerRef.current) return;
-    drawerRef.current.drawDots(dots, {
-      penColor: 'red',
+  drawDots = (dots: IDotPosition[]) => {
+    if (!this.animationDrawer || !dots.length) return;
+    this.animationDrawer.drawDots(dots, {
+      strokeStyle: 'red',
       lineWidth: 15,
       revertSettingsBack: true,
     });
   };
 
-  const saveIntersectionDots = (newDots: IDotPosition[]) => {
-    setIntersectionDots((oldDots) => {
-      return [...oldDots, ...newDots];
+  saveIntersectionDots = (newDots: IDotPosition[]) => {
+    this.setState(({ intersectionDots }) => {
+      return {
+        intersectionDots: [...intersectionDots, ...newDots],
+      };
     });
   };
 
-  const getIntersectionDots = (mainLine: ILinePosition): IDotPosition[] => {
-    return geometricCalculator.calculateLineIntersectionDots(mainLine, visibleLines);
+  getIntersectionDots = (mainLine: ILinePosition): IDotPosition[] => {
+    return geometricCalculator.calculateLineIntersectionDots(mainLine, this.state.visibleLines);
   };
 
-  const saveLine = (newLine: ILinePosition) => {
-    if (!firstDotPosition) return;
+  saveLine = (newLine: ILinePosition): void => {
+    if (!this.state.firstDotPosition) return;
 
-    setVisibleLines((lines) => {
-      return [...lines, newLine];
-    });
+    this.setState(({ visibleLines }) => ({
+      visibleLines: [...visibleLines, newLine],
+    }));
   };
 
-  const drawLine = (line: ILinePosition) => {
-    if (!drawerRef.current) return;
+  drawLine = (line: ILinePosition) => {
+    const animationDrawer = this.animationDrawer;
+    if (!animationDrawer) return;
 
-    drawerRef.current.clearAll();
+    animationDrawer.clearAll();
 
-    drawerRef.current.drawLines([line, ...visibleLines]);
+    animationDrawer.drawLines([line, ...this.state.visibleLines]);
   };
 
-  const moveHandler: MouseEventHandler<HTMLCanvasElement> = ({ nativeEvent }) => {
-    if (!firstDotPosition || !drawerRef.current) return;
+  moveHandler: MouseEventHandler<HTMLCanvasElement> = ({ nativeEvent }) => {
+    if (!this.state.firstDotPosition || !this.animationDrawer) return;
+    const { firstDotPosition, intersectionDots, isAnimating } = this.state;
 
     if (isAnimating) {
-      setAnimationWarning(true);
+      this.setState({
+        animationWarning: true,
+      });
       return;
     }
 
@@ -117,16 +138,20 @@ const Canvas = forwardRef<IbuttonClearHandlerRef | null>((_props, clearHandlerRe
       secondDotPosition,
     };
 
-    drawLine(currentLine);
+    this.drawLine(currentLine);
 
-    const currentIntersectionDots = getIntersectionDots(currentLine);
+    const currentIntersectionDots = this.getIntersectionDots(currentLine);
 
-    drawDots([...intersectionDots, ...currentIntersectionDots]);
+    this.drawDots([...intersectionDots, ...currentIntersectionDots]);
   };
 
-  const clickHandler: MouseEventHandler<HTMLCanvasElement> = ({ nativeEvent }) => {
+  clickHandler: MouseEventHandler<HTMLCanvasElement> = ({ nativeEvent }) => {
+    const { firstDotPosition, isAnimating } = this.state;
+
     if (isAnimating) {
-      setAnimationWarning(true);
+      this.setState({
+        animationWarning: true,
+      });
       return;
     }
 
@@ -138,7 +163,9 @@ const Canvas = forwardRef<IbuttonClearHandlerRef | null>((_props, clearHandlerRe
     };
 
     if (!firstDotPosition) {
-      setFirstDotPosition(newDotPosition);
+      this.setState({
+        firstDotPosition: newDotPosition,
+      });
       return;
     }
 
@@ -147,27 +174,29 @@ const Canvas = forwardRef<IbuttonClearHandlerRef | null>((_props, clearHandlerRe
       secondDotPosition: newDotPosition,
     };
 
-    const newIntersectionDots = getIntersectionDots(newLine);
-    saveIntersectionDots(newIntersectionDots);
-    saveLine(newLine);
-    setFirstDotPosition(null);
+    const newIntersectionDots = this.getIntersectionDots(newLine);
+    this.saveIntersectionDots(newIntersectionDots);
+    this.saveLine(newLine);
+    this.setState({
+      firstDotPosition: null,
+    });
   };
 
-  return (
-    <>
-      <canvas
-        onClick={clickHandler}
-        onMouseMove={moveHandler}
-        ref={canvasRef}
-        className='canvas-field__canvas'
-      ></canvas>
-      {animationWarning && (
-        <p className='canvas-field__warning'>Don't touch while the animation lasts</p>
-      )}
-    </>
-  );
-});
+  render(): ReactNode {
+    return (
+      <>
+        <canvas
+          onClick={this.clickHandler}
+          onMouseMove={this.moveHandler}
+          ref={this.canvasRef}
+          className='canvas-field__canvas'
+        ></canvas>
+        {this.state.animationWarning && (
+          <p className='canvas-field__warning'>Don't touch while the animation lasts</p>
+        )}
+      </>
+    );
+  }
+}
 
-Canvas.displayName = 'Canvas';
-
-export default Canvas;
+export default Convas;

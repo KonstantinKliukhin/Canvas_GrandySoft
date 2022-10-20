@@ -1,5 +1,6 @@
-import CanvasPainter from './canvasPainter/canvasPainter';
-import Drawer from './drawer/drawer';
+import { CanvasDrawer } from './canvasDrawer/canvasDrawer';
+import CanvasGeometricAnimationDrawer from './canvasGeometricAnimationDrawer/canvasGeometricAnimationDrawer';
+import canvasGeometricDrawer from './canvasGeometricDrawer/canvasGeometricDrawer';
 import geometricCalculator from './geometricCalculator/geometricCalculator';
 
-export { CanvasPainter, Drawer, geometricCalculator };
+export { geometricCalculator, CanvasDrawer, canvasGeometricDrawer, CanvasGeometricAnimationDrawer };
